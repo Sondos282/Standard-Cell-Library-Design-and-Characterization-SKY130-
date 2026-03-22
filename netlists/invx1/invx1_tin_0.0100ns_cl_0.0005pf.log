@@ -1,0 +1,6 @@
+D:\Uniii\VM_Shared\Project 1\netlists\invx1\invx1_tin_0.0100ns_cl_0.0005pf.sp(6): File not found.
+    .lib "/path/to/sky130.lib.spice" tt
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+D:\Uniii\VM_Shared\Project 1\netlists\invx1\invx1_tin_0.0100ns_cl_0.0005pf.sp(10): File not found.
+    .include "cells.sp"
+              ^^^^^^^^^
