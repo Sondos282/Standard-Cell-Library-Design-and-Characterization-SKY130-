@@ -43,38 +43,38 @@
 * Base x1: Wn=1, Wp=Kp
 * -------------------------
 .subckt inv_core A Y VDD GND params: SCALE=1
-Mp0 Y A VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*KP*WU} L={LCH}
-Mn0 Y A GND GND sky130_fd_pr__nfet_01v8 W={SCALE*1*WU}  L={LCH}
+XMp0 Y A VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*KP*WU} L={LCH}
+XMn0 Y A GND GND sky130_fd_pr__nfet_01v8 W={SCALE*1*WU}  L={LCH}
 .ends inv_core
 
 
 * -------------------------
 * NAND2 core
-* Base x1: Wn=2, Wp=2Kp
+* Base x1: Wn=2, Wp=Kp
 * -------------------------
 .subckt nand2_core A B Y VDD GND params: SCALE=1
 * Pull-up: PMOS in parallel
-Mp0 Y A VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2*KP*WU} L={LCH}
-Mp1 Y B VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2*KP*WU} L={LCH}
+XMp0 Y A VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*KP*WU} L={LCH}
+XMp1 Y B VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*KP*WU} L={LCH}
 
 * Pull-down: NMOS in series
-Mn0 Y  A N1  GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU} L={LCH}
-Mn1 N1 B GND GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU} L={LCH}
+XMn0 Y  A N1  GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU} L={LCH}
+XMn1 N1 B GND GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU} L={LCH}
 .ends nand2_core
 
 
 * -------------------------
 * NOR2 core
-* Base x1: Wn=1, Wp=2Kp
+* Base x1: Wn=1, Wp=2Kps
 * -------------------------
 .subckt nor2_core A B Y VDD GND params: SCALE=1
 * Pull-up: PMOS in series
-Mp0 Y  A N1  VDD sky130_fd_pr__pfet_01v8 W={SCALE*2*KP*WU} L={LCH}
-Mp1 N1 B VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2*KP*WU} L={LCH}
+XMp0 Y  A N1  VDD sky130_fd_pr__pfet_01v8 W={SCALE*2*KP*WU} L={LCH}
+XMp1 N1 B VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2*KP*WU} L={LCH}
 
 * Pull-down: NMOS in parallel
-Mn0 Y A GND GND sky130_fd_pr__nfet_01v8 W={SCALE*1*WU} L={LCH}
-Mn1 Y B GND GND sky130_fd_pr__nfet_01v8 W={SCALE*1*WU} L={LCH}
+XMn0 Y A GND GND sky130_fd_pr__nfet_01v8 W={SCALE*1*WU} L={LCH}
+XMn1 Y B GND GND sky130_fd_pr__nfet_01v8 W={SCALE*1*WU} L={LCH}
 .ends nor2_core
 
 
@@ -95,31 +95,31 @@ Mn1 Y B GND GND sky130_fd_pr__nfet_01v8 W={SCALE*1*WU} L={LCH}
 .subckt maj3_core A B C Y VDD GND params: SCALE=1
 
 * ----- NAND(A,B) -> nAB
-MpAB0 nAB A   VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
-MpAB1 nAB B   VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
-MnAB0 nAB A   NAB1 GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
-MnAB1 NAB1 B  GND  GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
+XMpAB0 nAB A   VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
+XMpAB1 nAB B   VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
+XMnAB0 nAB A   NAB1 GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
+XMnAB1 NAB1 B  GND  GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
 
 * ----- NAND(A,C) -> nAC
-MpAC0 nAC A   VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
-MpAC1 nAC C   VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
-MnAC0 nAC A   NAC1 GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
-MnAC1 NAC1 C  GND  GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
+XMpAC0 nAC A   VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
+XMpAC1 nAC C   VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
+XMnAC0 nAC A   NAC1 GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
+XMnAC1 NAC1 C  GND  GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
 
 * ----- NAND(B,C) -> nBC
-MpBC0 nBC B   VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
-MpBC1 nBC C   VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
-MnBC0 nBC B   NBC1 GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
-MnBC1 NBC1 C  GND  GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
+XMpBC0 nBC B   VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
+XMpBC1 nBC C   VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
+XMnBC0 nBC B   NBC1 GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
+XMnBC1 NBC1 C  GND  GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
 
 * ----- NAND(nAB,nAC,nBC) -> Y
-MpY0 Y   nAB VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
-MpY1 Y   nAC VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
-MpY2 Y   nBC VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
+XMpY0 Y   nAB VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
+XMpY1 Y   nAC VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
+XMpY2 Y   nBC VDD VDD sky130_fd_pr__pfet_01v8 W={SCALE*2.5*KP*WU} L={LCH}
 
-MnY0 Y   nAB NY1 GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
-MnY1 NY1 nAC NY2 GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
-MnY2 NY2 nBC GND GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
+XMnY0 Y   nAB NY1 GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
+XMnY1 NY1 nAC NY2 GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
+XMnY2 NY2 nBC GND GND sky130_fd_pr__nfet_01v8 W={SCALE*2*WU}      L={LCH}
 
 .ends maj3_core
 

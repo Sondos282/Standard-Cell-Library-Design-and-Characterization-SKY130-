@@ -192,11 +192,14 @@ def build_netlist(cell_name: str, slew_ns: float, cap_pf: float) -> str:
     * ==========================================================
     .title {title}
 
+    * Force scale to 1 to prevent double-scaling of 'u' suffixes
+    .option scale=1
+
     .lib "{SKY130_LIB_PATH}" {SKY130_CORNER}
     .temp {TEMP_C}
 
     * Include your standard-cell library file
-    .include "cells.sp"
+    .include "/media/sf_VM_Shared/VM_Shared/Project 1/cells.sp"
 
     {build_sources(cell_name, slew_ns)}
 
