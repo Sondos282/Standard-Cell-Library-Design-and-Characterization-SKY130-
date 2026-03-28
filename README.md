@@ -32,8 +32,7 @@ This repository contains the design and automated SPICE characterization of a 13
 Ensure you have `ngspice` installed and the SKY130 PDK accessible. Python 3 requires the `pandas`, `matplotlib`, and `numpy` libraries.
 
 **Important:** To read the SKY130 HSPICE models correctly without double-scaling issues, ensure your local directory contains a `.spiceinit` file with the following line:
-```bash
-set ngbehavior=hsa
+`set ngbehavior=hsa`
 
 ### Execution Steps
 1. Generate the netlists: `python3 generate_netlists.py`
