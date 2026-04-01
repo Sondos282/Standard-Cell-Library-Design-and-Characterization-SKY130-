@@ -1,59 +1,76 @@
-
 import csv
-import json
 from pathlib import Path
 
 RESULTS_CSV = "results/characterization_results.csv"
+OUT_CSV     = "results/rc_comparison.csv"
 
-MID_TIN  = 0.1225   # ns
-MID_CLOAD = 0.0094  # pF
+MID_TIN   = 0.1225   # ns
+MID_CLOAD = 0.0094   # pF
 
-TN_S    = 1.240355e-10   # s
-TP_S    = 2.943091e-10   # s
-C_TEST  = 25e-15         # F 
+TN_S   = 1.240355e-10   # s  — NMOS discharge time for 25fF to 50% VDD
+TP_S   = 2.943091e-10   # s  — PMOS charge time for 25fF to 50% VDD
+C_TEST = 25e-15         # F  — load cap used in kp.sp
 
-# R = T / (0.69 × C)  for the minimum-size transistor 
-R_N_MIN = TN_S / (0.69 * C_TEST)   # smallest NMOS  
-R_P_MIN = TP_S / (0.69 * C_TEST)   # smallest PMOS  
-KP      = TP_S / TN_S 
+R_N_MIN = TN_S / (0.69 * C_TEST)   # W=0.42um NMOS
+R_P_MIN = TP_S / (0.69 * C_TEST)   # W=1.00um PMOS
 
-C_INV   = 1.597333e-15 
+C_INT = 1.597333e-15   # F, INVx1 input cap from cinv.sp
 
-print(f"  R_N (min NMOS, W=0.42um) = {R_N_MIN:.1f} Ω")
-print(f"  R_P (min PMOS, W=1.00um) = {R_P_MIN:.1f} Ω")
-print(f"  Kp                       = {KP:.4f}")
-print(f"  C_inv (INVx1 input)      = {C_INV*1e15:.4f} fF")
+W_MIN_N = 0.42   
+W_MIN_P = 1.00   
+KP      = 2.4
+WU      = 1.0    
 
+R_N_INV  = R_N_MIN * (W_MIN_N / (1     * WU))   # Wn=1u
+R_P_INV  = R_P_MIN * (W_MIN_P / (KP    * WU))   # Wp=2.4u
+
+R_N_NAND = R_N_MIN * (W_MIN_N / (2     * WU))   # Wn=2u
+R_P_NAND = R_P_MIN * (W_MIN_P / (KP    * WU))   # Wp=2.4u
+
+R_N_NOR  = R_N_MIN * (W_MIN_N / (1     * WU))   # Wn=1u
+R_P_NOR  = R_P_MIN * (W_MIN_P / (2*KP  * WU))   # Wp=4.8u
+
+R_N_MAJ  = R_N_MIN * (W_MIN_N / (2     * WU))   # Wn=2u
+R_P_MAJ  = R_P_MIN * (W_MIN_P / (2.5*KP* WU))   # Wp=6.0u
+
+# Cell definitions
 CELL_DEFS = {
-    # Inverters
-    "invx1":   {"size": 1, "r_n_eff": 1,   "r_p_eff": 1  },
-    "invx2":   {"size": 2, "r_n_eff": 1,   "r_p_eff": 1  },
-    "invx4":   {"size": 4, "r_n_eff": 1,   "r_p_eff": 1  },
-    "invx8":   {"size": 8, "r_n_eff": 1,   "r_p_eff": 1  },
-    # NAND2: 2 NMOS in series (×2), 2 PMOS in parallel (×0.5)
-    "nand2x1": {"size": 1, "r_n_eff": 2,   "r_p_eff": 0.5},
-    "nand2x2": {"size": 2, "r_n_eff": 2,   "r_p_eff": 0.5},
-    "nand2x4": {"size": 4, "r_n_eff": 2,   "r_p_eff": 0.5},
-    # NOR2: 2 NMOS in parallel (×0.5), 2 PMOS in series (×2)
-    "nor2x1":  {"size": 1, "r_n_eff": 0.5, "r_p_eff": 2  },
-    "nor2x2":  {"size": 2, "r_n_eff": 0.5, "r_p_eff": 2  },
-    "nor2x4":  {"size": 4, "r_n_eff": 0.5, "r_p_eff": 2  },
-    # MAJ3
-    "maj3x1":  {"size": 1, "r_n_eff": 2,   "r_p_eff": 2  },
-    "maj3x2":  {"size": 2, "r_n_eff": 2,   "r_p_eff": 2  },
-    "maj3x4":  {"size": 4, "r_n_eff": 2,   "r_p_eff": 2  },
+    "invx1":   {"size": 1, "r_n": R_N_INV,  "r_p": R_P_INV,  "r_n_mult": 1,   "r_p_mult": 1,   "type": "simple"},
+    "invx2":   {"size": 2, "r_n": R_N_INV,  "r_p": R_P_INV,  "r_n_mult": 1,   "r_p_mult": 1,   "type": "simple"},
+    "invx4":   {"size": 4, "r_n": R_N_INV,  "r_p": R_P_INV,  "r_n_mult": 1,   "r_p_mult": 1,   "type": "simple"},
+    "invx8":   {"size": 8, "r_n": R_N_INV,  "r_p": R_P_INV,  "r_n_mult": 1,   "r_p_mult": 1,   "type": "simple"},
+    "nand2x1": {"size": 1, "r_n": R_N_NAND, "r_p": R_P_NAND, "r_n_mult": 2,   "r_p_mult": 0.5, "type": "simple"},
+    "nand2x2": {"size": 2, "r_n": R_N_NAND, "r_p": R_P_NAND, "r_n_mult": 2,   "r_p_mult": 0.5, "type": "simple"},
+    "nand2x4": {"size": 4, "r_n": R_N_NAND, "r_p": R_P_NAND, "r_n_mult": 2,   "r_p_mult": 0.5, "type": "simple"},
+    "nor2x1":  {"size": 1, "r_n": R_N_NOR,  "r_p": R_P_NOR,  "r_n_mult": 0.5, "r_p_mult": 2,   "type": "simple"},
+    "nor2x2":  {"size": 2, "r_n": R_N_NOR,  "r_p": R_P_NOR,  "r_n_mult": 0.5, "r_p_mult": 2,   "type": "simple"},
+    "nor2x4":  {"size": 4, "r_n": R_N_NOR,  "r_p": R_P_NOR,  "r_n_mult": 0.5, "r_p_mult": 2,   "type": "simple"},
+    "maj3x1":  {"size": 1, "type": "maj3"},
+    "maj3x2":  {"size": 2, "type": "maj3"},
+    "maj3x4":  {"size": 4, "type": "maj3"},
 }
 
+# analytical RC delay calculations
+def compute_rc_delay(r_base: float, r_mult: float, size: int,
+                     c_int_f: float, c_load_pf: float) -> float:
+    R_eff   = r_base * r_mult / size
+    C_total = c_int_f + c_load_pf * 1e-12
+    return 0.69 * R_eff * C_total * 1e9   # ns
 
-def rc_delay_ns(r_base_ohm: float, r_eff_mult: float,
-                size: int, c_int_f: float, c_load_pf: float) -> float:
-    R_eff  = r_base_ohm * r_eff_mult / size          # effective resistance Ω
-    C_total = c_int_f + c_load_pf * 1e-12            # total capacitance F
-    t_s    = 0.69 * R_eff * C_total                  # delay in seconds
-    return t_s * 1e9                                 # ns
 
-# Load SPICE mid-point values from CSV
-def load_midpoint(csv_path: str) -> dict:
+def compute_maj3_rc(size: int, c_int_f: float, c_load_pf: float):
+    c_int_pf = c_int_f * 1e12
+
+    stage1_rise = compute_rc_delay(R_P_MAJ, 0.5, size, c_int_f, c_int_pf)
+    stage1_fall = compute_rc_delay(R_N_MAJ, 2,   size, c_int_f, c_int_pf)
+
+    stage2_rise = compute_rc_delay(R_P_MAJ, 1/3, size, c_int_f, c_load_pf)
+    stage2_fall = compute_rc_delay(R_N_MAJ, 3,   size, c_int_f, c_load_pf)
+
+    return stage1_rise + stage2_rise, stage1_fall + stage2_fall
+
+# Load NLDM mid-point values from CSV
+def load_spice_midpoints(csv_path: str) -> dict:
     midpoints = {}
     with open(csv_path, newline="") as f:
         reader = csv.DictReader(f)
@@ -65,79 +82,64 @@ def load_midpoint(csv_path: str) -> dict:
                 continue
             if abs(tin - MID_TIN) < 1e-6 and abs(cl - MID_CLOAD) < 1e-6:
                 midpoints[row["cell"]] = {
-                    "cell_rise":       float(row["cell_rise"])       if row["cell_rise"]       else None,
-                    "cell_fall":       float(row["cell_fall"])       if row["cell_fall"]       else None,
-                    "rise_transition": float(row["rise_transition"]) if row["rise_transition"] else None,
-                    "fall_transition": float(row["fall_transition"]) if row["fall_transition"] else None,
+                    "nldm_cell_rise": float(row["cell_rise"]) if row["cell_rise"] else None,
+                    "nldm_cell_fall": float(row["cell_fall"]) if row["cell_fall"] else None,
                 }
     return midpoints
 
-# comparison
 def main():
-    print(f"  RC Model vs SPICE Comparison  —  mid-point: tin={MID_TIN}ns, cload={MID_CLOAD}pF")
+    print(f"\nSKY130 parameters:")
+    print(f"  R_N_MIN = {R_N_MIN:.1f} Ω  (W={W_MIN_N}um NMOS)")
+    print(f"  R_P_MIN = {R_P_MIN:.1f} Ω  (W={W_MIN_P}um PMOS)")
+    print(f"  C_int   = {C_INT*1e15:.3f} fF")
+    print(f"  Mid-point: tin={MID_TIN}ns, cload={MID_CLOAD}pF\n")
 
-    spice_data = load_midpoint(RESULTS_CSV)
+    nldm = load_spice_midpoints(RESULTS_CSV)
 
-    if not spice_data:
-        print(f"[ERROR] No mid-point data found in {RESULTS_CSV}")
-        print(f"        Make sure tin={MID_TIN} and cl={MID_CLOAD} rows exist.")
+    if not nldm:
+        print(f"No mid-point rows found in {RESULTS_CSV}")
         return
+    print(f"  RC Model Calculation vs NLDM Mid-Point")
+    print(f"\n  {'Cell':<12}  {'RC_rise':>10}  {'NLDM_rise':>10}  {'RC_fall':>10}  {'NLDM_fall':>10}")
 
-    hdr = (f"{'Cell':<12} {'RC_tpLH':>10} {'SP_rise':>10} {'err_rise%':>10}"
-           f"  {'RC_tpHL':>10} {'SP_fall':>10} {'err_fall%':>10}")
-    print(hdr)
-    print("─" * len(hdr))
-
-    results = []
+    rows = []
 
     for cell_name, defs in CELL_DEFS.items():
-        size      = defs["size"]
-        r_n_eff   = defs["r_n_eff"]
-        r_p_eff   = defs["r_p_eff"]
+        size = defs["size"]
 
-        # RC model predictions
-        rc_tpLH = rc_delay_ns(R_N_MIN, r_n_eff, size, C_INV, MID_CLOAD)  # pull-down → rising output for inv
-        rc_tpHL = rc_delay_ns(R_P_MIN, r_p_eff, size, C_INV, MID_CLOAD)  # pull-up  → falling output for inv
+        # Analytical RC calculation
+        if defs["type"] == "maj3":
+            rc_rise, rc_fall = compute_maj3_rc(size, C_INT, MID_CLOAD)
+        else:
+            rc_rise = compute_rc_delay(defs["r_p"], defs["r_p_mult"], size, C_INT, MID_CLOAD)
+            rc_fall = compute_rc_delay(defs["r_n"], defs["r_n_mult"], size, C_INT, MID_CLOAD)
 
-        sp = spice_data.get(cell_name, {})
-        sp_rise = sp.get("cell_rise")
-        sp_fall = sp.get("cell_fall")
+        # NLDM mid-point values
+        sp         = nldm.get(cell_name, {})
+        nldm_rise  = sp.get("nldm_cell_rise")
+        nldm_fall  = sp.get("nldm_cell_fall")
 
-        def pct_err(rc, sp_val):
-            if sp_val and sp_val > 0:
-                return (rc - sp_val) / sp_val * 100
-            return None
+        def fmt(v):
+            return f"{v:.5f}" if v is not None else "    N/A"
 
-        err_rise = pct_err(rc_tpLH, sp_rise)
-        err_fall = pct_err(rc_tpHL, sp_fall)
+        print(f"  {cell_name:<12}  {fmt(rc_rise):>10}  {fmt(nldm_rise):>10}"
+              f"  {fmt(rc_fall):>10}  {fmt(nldm_fall):>10}")
 
-        def fmt(v, unit=""):
-            return f"{v:.4f}{unit}" if v is not None else "   N/A"
-        def fmt_pct(v):
-            return f"{v:+.1f}%" if v is not None else "   N/A"
-
-        print(f"{cell_name:<12} "
-              f"{fmt(rc_tpLH, ' ns'):>10} {fmt(sp_rise, ' ns'):>10} {fmt_pct(err_rise):>10}  "
-              f"{fmt(rc_tpHL, ' ns'):>10} {fmt(sp_fall, ' ns'):>10} {fmt_pct(err_fall):>10}")
-
-        results.append({
-            "cell": cell_name,
-            "rc_tpLH_ns": rc_tpLH,
-            "rc_tpHL_ns": rc_tpHL,
-            "spice_rise_ns": sp_rise,
-            "spice_fall_ns": sp_fall,
-            "err_rise_pct": err_rise,
-            "err_fall_pct": err_fall,
+        rows.append({
+            "cell":         cell_name,
+            "rc_rise_ns":   round(rc_rise, 7),
+            "nldm_rise_ns": nldm_rise,
+            "rc_fall_ns":   round(rc_fall, 7),
+            "nldm_fall_ns": nldm_fall,
         })
 
     # Save to CSV
-    out_path = Path("results/rc_comparison.csv")
-    out_path.parent.mkdir(exist_ok=True)
-    with open(out_path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=results[0].keys())
+    Path(OUT_CSV).parent.mkdir(exist_ok=True)
+    with open(OUT_CSV, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=rows[0].keys())
         writer.writeheader()
-        writer.writerows(results)
-    print(f"  Saved comparison table to {out_path}\n")
+        writer.writerows(rows)
+    print(f"  Saved to {OUT_CSV}\n")
 
 
 if __name__ == "__main__":
