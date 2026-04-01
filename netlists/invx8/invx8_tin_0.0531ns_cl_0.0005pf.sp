@@ -1,15 +1,10 @@
-    * ==========================================================
-    * invx8 characterization, tin=0.0531ns, cload=0.0005pF
-    * ==========================================================
     .title invx8 characterization, tin=0.0531ns, cload=0.0005pF
 
-    * Force scale to 1 to prevent double-scaling of 'u' suffixes
     .option scale=1
 
     .lib "/home/sondos/work/pdks/sky130A/libs.tech/ngspice/sky130.lib.spice" tt
     .temp 25
 
-    * Include your standard-cell library file
     .include "/media/sf_VM_Shared/VM_Shared/Project 1/cells.sp"
 
     VDD vdd 0 DC 1.8

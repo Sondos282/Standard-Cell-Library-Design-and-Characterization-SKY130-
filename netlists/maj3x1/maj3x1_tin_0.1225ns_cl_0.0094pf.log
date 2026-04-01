@@ -1,0 +1,9 @@
+D:\Uniii\VM_Shared\Project 1\netlists\maj3x1\maj3x1_tin_0.1225ns_cl_0.0094pf.sp(7): syntax error
+    .option scale=1
+           ^^^^^^^^
+D:\Uniii\VM_Shared\Project 1\netlists\maj3x1\maj3x1_tin_0.1225ns_cl_0.0094pf.sp(9): File not found.
+    .lib "/home/sondos/work/pdks/sky130A/libs.tech/ngspice/sky130.lib.spice" tt
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+D:\Uniii\VM_Shared\Project 1\netlists\maj3x1\maj3x1_tin_0.1225ns_cl_0.0094pf.sp(13): File not found.
+    .include "/media/sf_VM_Shared/VM_Shared/Project 1/cells.sp"
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -3,8 +3,6 @@
 from pathlib import Path
 from textwrap import dedent
 
-# Project configuration
-
 VDD = 1.8
 TEMP_C = 25
 
@@ -42,34 +40,12 @@ PIN_ORDERS = {
     "maj3x4":  ["A", "B", "C", "Y", "VDD", "VSS"],
 }
 
-# For each cell, define the input toggled for characterization and the static values
-# on non-switching inputs to force a valid output rise/fall arc.
+
 ARC_CONFIGS = {
-    # inverter: toggle A
-    "inv": {
-        "toggle_pin": "A",
-        "static_inputs": {},
-        # output fall when A rises, output rise when A falls
-    },
-
-    # NAND2: characterize A while B=1
-    "nand2": {
-        "toggle_pin": "A",
-        "static_inputs": {"B": 1},
-    },
-
-    # NOR2: characterize A while B=0
-    "nor2": {
-        "toggle_pin": "A",
-        "static_inputs": {"B": 0},
-    },
-
-    # MAJ3: characterize A while B=1, C=0
-    # Then Y follows A (majority of A,1,0 = A)
-    "maj3": {
-        "toggle_pin": "A",
-        "static_inputs": {"B": 1, "C": 0},
-    },
+    "inv":   {"toggle_pin": "A", "static_inputs": {}, "inverting": True},
+    "nand2": {"toggle_pin": "A", "static_inputs": {"B": 1}, "inverting": True},
+    "nor2":  {"toggle_pin": "A", "static_inputs": {"B": 0}, "inverting": True},
+    "maj3":  {"toggle_pin": "A", "static_inputs": {"B": 1, "C": 0}, "inverting": False},
 }
 
 # Utility functions
@@ -100,7 +76,6 @@ def build_pulse_source(slew_ns: float) -> str:
     tr = ns_to_s(slew_ns)
     tf = ns_to_s(slew_ns)
 
-    # Long enough period for one clean switching event
     td = 2e-9
     pw = 8e-9
     per = 20e-9
@@ -111,10 +86,6 @@ def build_dc_source(value: int) -> str:
     return f"DC {VDD if value else 0}"
 
 def build_instance_line(cell_name: str) -> str:
-    """
-    Create the XUUT line according to PIN_ORDERS.
-    External nodes use the same names as pins, except power uses vdd/vss.
-    """
     pins = PIN_ORDERS[cell_name]
     node_map = {
         "A": "a",
@@ -157,16 +128,21 @@ def build_load(cap_pf: float) -> str:
     cap_f = pf_to_f(cap_pf)
     return f"Cload y 0 {fmt_float(cap_f)}"
 
-def build_measures() -> str:
+def build_measures(is_inverting: bool) -> str:
     v20 = 0.2 * VDD
     v50 = 0.5 * VDD
     v80 = 0.8 * VDD
 
+    if is_inverting:
+        fall_trig, rise_trig = "RISE=1", "FALL=1"
+    else:
+        fall_trig, rise_trig = "FALL=1", "RISE=1"
+
     return dedent(f"""\
     * ---- Measurements ----
     * Propagation delays
-    .measure tran cell_fall TRIG v(a) VAL={fmt_float(v50)} RISE=1 TARG v(y) VAL={fmt_float(v50)} FALL=1
-    .measure tran cell_rise TRIG v(a) VAL={fmt_float(v50)} FALL=1 TARG v(y) VAL={fmt_float(v50)} RISE=1
+    .measure tran cell_fall TRIG v(a) VAL={v50} {fall_trig} TARG v(y) VAL={v50} FALL=1
+    .measure tran cell_rise TRIG v(a) VAL={v50} {rise_trig} TARG v(y) VAL={v50} RISE=1
 
     * Output transition times
     .measure tran rise_transition TRIG v(y) VAL={fmt_float(v20)} RISE=1 TARG v(y) VAL={fmt_float(v80)} RISE=1
@@ -174,11 +150,6 @@ def build_measures() -> str:
     """)
 
 def build_tran_control(slew_ns: float, cap_pf: float) -> str:
-    """
-    Choose a conservative transient stop time.
-    For larger slews/loads, simulation may need longer settling.
-    """
-    # Heuristic runtime
     tstep = min(ns_to_s(slew_ns) / 20, 5e-12)
     tstop = 60e-9
     return f".tran {fmt_float(tstep)} {fmt_float(tstop)}"
@@ -186,19 +157,17 @@ def build_tran_control(slew_ns: float, cap_pf: float) -> str:
 def build_netlist(cell_name: str, slew_ns: float, cap_pf: float) -> str:
     title = f"{cell_name} characterization, tin={slew_ns}ns, cload={cap_pf}pF"
 
+    family = classify_cell(cell_name)
+    is_inv = ARC_CONFIGS[family]["inverting"]
+
     return dedent(f"""\
-    * ==========================================================
-    * {title}
-    * ==========================================================
     .title {title}
 
-    * Force scale to 1 to prevent double-scaling of 'u' suffixes
     .option scale=1
 
     .lib "{SKY130_LIB_PATH}" {SKY130_CORNER}
     .temp {TEMP_C}
 
-    * Include your standard-cell library file
     .include "/media/sf_VM_Shared/VM_Shared/Project 1/cells.sp"
 
     {build_sources(cell_name, slew_ns)}
@@ -207,7 +176,7 @@ def build_netlist(cell_name: str, slew_ns: float, cap_pf: float) -> str:
 
     {build_load(cap_pf)}
 
-    {build_measures()}
+    {build_measures(is_inv)}
 
     {build_tran_control(slew_ns, cap_pf)}
 
