@@ -2,7 +2,7 @@
 
 ## 👥 Team Members
 * **Student 1:** Sondos Ahmed - 900233537
-* **Student 2:** Habiba ElSayed - 900
+* **Student 2:** Habiba ElSayed - 900221264
 
 ## 📝 Project Overview
 This repository contains the design and automated SPICE characterization of a 13-cell standard cell library using the open-source SKY130 Process Design Kit (PDK). The automated flow generates 637 SPICE netlists across varying input transitions and load capacitances, simulates them in parallel using `ngspice`, and parses the results to construct standard Non-Linear Delay Model (NLDM) tables.
@@ -21,7 +21,7 @@ This repository contains the design and automated SPICE characterization of a 13
 * `cells.sp` - The core SPICE library containing `.subckt` definitions for all 13 standard cells.
 * `generate_netlists.py` - Script to generate the 637 `.sp` testbenches for all combinations of input slew and load capacitance.
 * `run_simulations.py` - Automation script that executes `ngspice` in parallel and parses the `.measure` outputs into a CSV.
-* `generate_report.py` / `plot_delay.py` - Scripts to process the CSV data, generate NLDM Markdown tables, and plot delay curves.
+* `characterize.py` / `plot_delay.py` - Scripts to process the CSV data, generate NLDM Markdown tables, and plot delay curves.
 * `characterization_results.csv` - The raw parsed simulation data.
 
 ---
@@ -37,7 +37,7 @@ Ensure you have `ngspice` installed and the SKY130 PDK accessible. Python 3 requ
 ### Execution Steps
 1. Generate the netlists: `python3 generate_netlists.py`
 2. Run parallel ngspice simulations: `python3 run_simulations.py`
-3. Generate NLDM tables and plots: `python3 generate_report.py` and `python3 plot_delay.py`
+3. Generate NLDM tables and plots: `python3 characterize.py` and `python3 plot_delay.py`
 
 ---
 
@@ -50,7 +50,8 @@ Below is the propagation delay plotted against load capacitance for the inverter
 
 
 ### 2. NLDM Tables
-The full set of 7x7 Non-Linear Delay Model (NLDM) tables for all 13 cells can be found in: 
+The full set of 7x7 Non-Linear Delay Model (NLDM) tables for all 13 cells can be found in:
+
 ---
 
 ## 🧮 Analytical Comparison: RC Model vs. SPICE
