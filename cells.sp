@@ -7,10 +7,10 @@
 *
 * Sizing assumptions:
 *   Kp = 2.4
-*   invx1   : Wn=1,  Wp=Kp
-*   nand2x1 : Wn=2,  Wp=2Kp
-*   nor2x1  : Wn=1,  Wp=2Kp
-*   maj3x1  : Wn=2,  Wp=2.5Kp
+*   invx1   : Wn=0.42,  Wp=Kp
+*   nand2x1 : Wn=0.84,  Wp=2Kp
+*   nor2x1  : Wn=0.42,  Wp=2Kp
+*   maj3x1  : Wn=0.84,  Wp=2.5Kp
 *
 * Scaling:
 *   x2 = 2x widths
@@ -19,7 +19,7 @@
 
 
 .param KP=2.4
-.param WU=1u
+.param WU=0.42u
 .param LCH=0.15u
 
 
