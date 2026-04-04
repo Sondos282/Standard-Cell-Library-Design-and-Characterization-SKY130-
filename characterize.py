@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 
 SKY130_LIB   = "/home/hab20034/work/pdks/sky130A/libs.tech/ngspice/sky130.lib.spice"
-CELLS_SP     = "/home/hab20034/DD2 Project/Standard-Cell-Library-Design-and-Characterization-SKY130-/cells.sp"
-NETLISTS_DIR = Path("/home/hab20034/DD2 Project/Standard-Cell-Library-Design-and-Characterization-SKY130-/netlists")
+CELLS_SP     = "/home/hab20034/DD2_Project/Standard-Cell-Library-Design-and-Characterization-SKY130-/cells.sp"
+NETLISTS_DIR = Path("/home/hab20034/DD2_Project/Standard-Cell-Library-Design-and-Characterization-SKY130-/netlists")
 FIXED_DIR    = Path("simulations_fixed")
 RESULTS_DIR  = Path("results")
 CSV_FLAT     = RESULTS_DIR / "characterization_results.csv"
