@@ -22,7 +22,7 @@ This repository contains the design and automated SPICE characterization of a 13
 * `generate_netlists.py` - Script to generate the 637 `.sp` testbenches for all combinations of input slew and load capacitance.
 * `run_simulations.py` - Automation script that executes `ngspice` in parallel and parses the `.measure` outputs into a CSV.
 * `characterize.py` / `plot_delay.py` - Scripts to process the CSV data, generate NLDM Markdown tables, and plot delay curves.
-* `characterization_results.csv` - The raw parsed simulation data.
+* `📂 Results` - Contains all the collected results: NLDM tables, plot delay curves, rc analysis suimulation.
 
 ---
 
@@ -60,12 +60,8 @@ The full set of 7x7 Non-Linear Delay Model (NLDM) tables for all 13 cells can be
 * Input Transition (tin) = 0.1225 ns
 * Load Capacitance (Cload) = 0.0094 pF
 
-### Theoretical First-Order Linear RC Delay
-* **Theoretical tpHL:**  ps
-* **Theoretical tpLH:**  ps
-
-### Simulated SPICE Delay (From NLDM Tables)
-* **Simulated `cell_fall` (tpHL):**  ps
-* **Simulated `cell_rise` (tpLH):**  ps
-
 ### Discussion and Limitations
+While the first-order RC model provides a useful baseline for hand calculations, it shows a discrepancy compared to the SPICE NLDM results. This deviation occurs because the RC model has several fundamental limitations:
+**Assumption of a Perfect Step Input:** The standard RC equations assume $t_{in} = 0$ (an instantaneous step). In reality, at $t_{in} = 0.1225 ns$, the input signal ramps gradually. During this transition window, both the PMOS and NMOS transistors are partially ON simultaneously. This creates a short-circuit current path from $V_{DD}$ to ground, which steals current away from charging/discharging the load capacitance, thereby increasing the actual propagation delay. The linear RC model completely fails to capture this input slew dependency.
+**Dynamic Transistor Behavior:** The RC model approximates transistors as constant linear resistors ($R_{eq}$). However, during switching, modern deep-submicron transistors (like those in SKY130) transition non-linearly through cutoff, saturation, and linear regions. Velocity saturation and short-channel effects further cause the equivalent resistance to change dynamically based on the drain-to-source voltage.
+Because of these limitations, using two-dimensional NLDM tables (which index both $C_{load}$ and $t_{in}$) is strictly necessary for accurate static timing analysis in modern digital design.
